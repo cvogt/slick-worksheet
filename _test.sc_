@@ -2,21 +2,22 @@ import scala.slick.driver.H2Driver.simple._
 import scala.slick.driver.H2Driver
 import slick.jdbc.StaticQuery.interpolation
 import config._
-object test {
+object test2 {
   val computerId = 1                              //> computerId  : Int = 1
   
-  // plain SQL, using interpolation for automatic escaping
+  // plain SQL, using interpolation for automatic escaping //
   val computerSql = sql"select * from COMPUTER c WHERE c.id = $computerId"
                                                   //> computerSql  : scala.slick.jdbc.SQLInterpolationResult[Int] = SQLInterpolati
                                                   //| onResult(WrappedArray(select * from COMPUTER c WHERE c.id = , ),1,<function2
                                                   //| >)
-
+  // as tuples
   computerSql.as[(Long,String,Long)]              //> res0: scala.slick.jdbc.StaticQuery0[(Long, String, Long)] = scala.slick.jdbc
                                                   //| .StaticQuery0@7e78fc6
 
-  computerSql.as[Computer].list                   //> res1: List[Computer] = List(Computer(1,MacBook Pro 15.4 inch,1))
+  // as objects
+  computerSql.as[Computer].first                  //> res1: List[Computer] = List(Computer(1,MacBook Pro 15.4 inch,1))
   
-  sql"select * from COMPUTER c,COMPANY co where c.MANUFACTURER_ID = co.ID".as[(Computer,Company)].list
+  sql"select * from COMPUTER c,COMPANY co where c.MANUFACTURER_ID = co.ID and c.ID = 1".as[(Computer,Company)].first
                                                   //> res2: List[(Computer, Company)] = List((Computer(1,MacBook Pro 15.4 inch,1),
                                                   //| Company(1,Apple Inc.)), (Computer(2,CM-2a,2),Company(2,Thinking Machines)), 
                                                   //| (Computer(3,CM-200,2),Company(2,Thinking Machines)), (Computer(4,CM-5e,2),Co
@@ -32,10 +33,11 @@ object test {
                                                   //| 1),Company(1,Apple Inc.)
                                                   //| Output exceeds cutoff limit.
   
-  // type-safe, collection-like queries
+  // type-safe, collection-like queries //
   Companies.take(5).run                           //> res3: Seq[Company] = Vector(Company(1,Apple Inc.), Company(2,Thinking Machin
                                                   //| es), Company(3,RCA), Company(4,Netronics), Company(5,Tandy Corporation))
   
+  // join
   (for( c <- Computers; co <- Companies; if c.manufacturerId === co.id && c.id === 1L ) yield (c,co)).first
                                                   //> res4: (Computer, Company) = (Computer(1,MacBook Pro 15.4 inch,1),Company(1,A
                                                   //| pple Inc.))
